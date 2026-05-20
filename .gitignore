@@ -44,6 +44,7 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 .vercel
+.vercel-home/
 .tmp_prd/
 .tmp_prd.zip
 API/apikeys.md
