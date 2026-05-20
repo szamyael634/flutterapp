@@ -18,7 +18,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _verificationCodeController = TextEditingController();
   AppRole _role = AppRole.buyer;
+  bool _awaitingVerification = false;
 
   @override
   void dispose() {
@@ -26,6 +28,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     _emailController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _verificationCodeController.dispose();
     super.dispose();
   }
 
@@ -34,7 +37,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       return;
     }
 
-    await ref
+    final requiresVerification = await ref
         .read(authControllerProvider.notifier)
         .signUp(
           email: _emailController.text.trim(),
@@ -56,10 +59,60 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       return;
     }
 
-    context.showSnackBar(
-      'Account created. Check your email if verification is enabled.',
-    );
+    if (requiresVerification) {
+      setState(() => _awaitingVerification = true);
+      context.showSnackBar(
+        'Account created. Enter the verification code sent to your email.',
+      );
+      return;
+    }
+
+    context.showSnackBar('Account created successfully.');
     Navigator.of(context).pop();
+  }
+
+  Future<void> _verifyCode() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    await ref
+        .read(authControllerProvider.notifier)
+        .verifySignUpCode(
+          email: _emailController.text.trim(),
+          code: _verificationCodeController.text.trim(),
+        );
+
+    final state = ref.read(authControllerProvider);
+    if (!mounted) {
+      return;
+    }
+
+    if (state.hasError) {
+      context.showSnackBar(state.error.toString(), isError: true);
+      return;
+    }
+
+    context.showSnackBar('Email verified. You can now use your account.');
+    Navigator.of(context).pop();
+  }
+
+  Future<void> _resendCode() async {
+    await ref
+        .read(authControllerProvider.notifier)
+        .resendSignUpCode(email: _emailController.text.trim());
+
+    final state = ref.read(authControllerProvider);
+    if (!mounted) {
+      return;
+    }
+
+    if (state.hasError) {
+      context.showSnackBar(state.error.toString(), isError: true);
+      return;
+    }
+
+    context.showSnackBar('A new verification code was sent to your email.');
   }
 
   @override
@@ -83,6 +136,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     children: [
                       TextFormField(
                         controller: _nameController,
+                        enabled: !_awaitingVerification,
                         decoration: const InputDecoration(
                           labelText: 'Full name',
                         ),
@@ -104,15 +158,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                               ),
                             )
                             .toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() => _role = value);
-                          }
-                        },
+                        onChanged: _awaitingVerification
+                            ? null
+                            : (value) {
+                                if (value != null) {
+                                  setState(() => _role = value);
+                                }
+                              },
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _emailController,
+                        enabled: !_awaitingVerification,
                         decoration: const InputDecoration(labelText: 'Email'),
                         validator: (value) =>
                             value != null && value.contains('@')
@@ -122,11 +179,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _phoneController,
+                        enabled: !_awaitingVerification,
                         decoration: const InputDecoration(labelText: 'Phone'),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _passwordController,
+                        enabled: !_awaitingVerification,
                         obscureText: true,
                         decoration: const InputDecoration(
                           labelText: 'Password',
@@ -135,9 +194,33 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             ? null
                             : 'Password must be at least 6 characters',
                       ),
+                      if (_awaitingVerification) ...[
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _verificationCodeController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Verification code',
+                            helperText: 'Enter the code sent to your email.',
+                          ),
+                          validator: (value) {
+                            if (!_awaitingVerification) {
+                              return null;
+                            }
+
+                            return value != null && value.trim().length >= 6
+                                ? null
+                                : 'Enter the verification code';
+                          },
+                        ),
+                      ],
                       const SizedBox(height: 24),
                       FilledButton(
-                        onPressed: authState.isLoading ? null : _submit,
+                        onPressed: authState.isLoading
+                            ? null
+                            : _awaitingVerification
+                            ? _verifyCode
+                            : _submit,
                         child: authState.isLoading
                             ? const SizedBox.square(
                                 dimension: 20,
@@ -145,8 +228,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text('Create account'),
+                            : Text(
+                                _awaitingVerification
+                                    ? 'Verify code'
+                                    : 'Create account',
+                              ),
                       ),
+                      if (_awaitingVerification) ...[
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: authState.isLoading ? null : _resendCode,
+                          child: const Text('Resend verification code'),
+                        ),
+                      ],
                     ],
                   ),
                 ),

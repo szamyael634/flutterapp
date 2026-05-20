@@ -14,19 +14,36 @@ class AuthRepository {
     return _supabase.auth.signInWithPassword(email: email, password: password);
   }
 
-  Future<void> signUp({
+  Future<bool> signUp({
     required String email,
     required String password,
     required String fullName,
     required AppRole role,
     String? phone,
   }) async {
-    await _supabase.auth.signUp(
+    final response = await _supabase.auth.signUp(
       email: email,
       password: password,
       emailRedirectTo: AppEnv.redirectUrl,
       data: {'full_name': fullName, 'role': role.name, 'phone': phone},
     );
+
+    return response.session == null;
+  }
+
+  Future<void> verifySignUpCode({
+    required String email,
+    required String code,
+  }) async {
+    await _supabase.auth.verifyOTP(
+      email: email,
+      token: code,
+      type: OtpType.signup,
+    );
+  }
+
+  Future<void> resendSignUpCode({required String email}) async {
+    await _supabase.auth.resend(email: email, type: OtpType.signup);
   }
 
   Future<void> signOut() => _supabase.auth.signOut();

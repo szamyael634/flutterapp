@@ -20,7 +20,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     );
   }
 
-  Future<void> signUp({
+  Future<bool> signUp({
     required String email,
     required String password,
     required String fullName,
@@ -28,14 +28,33 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     String? phone,
   }) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => _repository.signUp(
+    var requiresVerification = false;
+    state = await AsyncValue.guard(() async {
+      requiresVerification = await _repository.signUp(
         email: email,
         password: password,
         fullName: fullName,
         role: role,
         phone: phone,
-      ),
+      );
+    });
+    return requiresVerification;
+  }
+
+  Future<void> verifySignUpCode({
+    required String email,
+    required String code,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => _repository.verifySignUpCode(email: email, code: code),
+    );
+  }
+
+  Future<void> resendSignUpCode({required String email}) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => _repository.resendSignUpCode(email: email),
     );
   }
 }
