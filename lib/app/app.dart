@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +8,7 @@ import '../core/providers/supabase.dart';
 import '../core/widgets/async_value_view.dart';
 import '../features/auth/presentation/login_page.dart';
 import '../features/home/presentation/home_shell.dart';
+import '../features/payments/presentation/payment_result_page.dart';
 import 'theme.dart';
 
 class MainApp extends ConsumerWidget {
@@ -28,6 +30,15 @@ class AppBootstrap extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final paymentResult = _readPaymentResult();
+
+    if (paymentResult != null) {
+      return PaymentResultPage(
+        orderId: paymentResult.orderId,
+        status: paymentResult.status,
+      );
+    }
+
     if (!AppEnv.hasSupabaseConfig) {
       return const _MissingConfigurationPage();
     }
@@ -50,6 +61,32 @@ class AppBootstrap extends ConsumerWidget {
       error: (error, stackTrace) => _AppErrorScreen(error: error),
     );
   }
+
+  _PaymentResultRoute? _readPaymentResult() {
+    if (!kIsWeb) {
+      return null;
+    }
+
+    final uri = Uri.base;
+    final orderId = uri.queryParameters['order'];
+    final status = uri.queryParameters['status'];
+
+    if (orderId == null || status == null) {
+      return null;
+    }
+
+    return _PaymentResultRoute(orderId: orderId, status: status);
+  }
+}
+
+class _PaymentResultRoute {
+  const _PaymentResultRoute({
+    required this.orderId,
+    required this.status,
+  });
+
+  final String orderId;
+  final String status;
 }
 
 class _SplashScreen extends StatelessWidget {
