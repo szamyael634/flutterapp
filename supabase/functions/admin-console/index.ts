@@ -334,12 +334,12 @@ async function saveCategory(body: JsonMap) {
   }
 
   const payload = {
-    if (categoryId != null && categoryId.isNotEmpty) 'id': categoryId,
-    'name': name,
-    'slug': slugify(name),
-    'description': description,
-    'is_active': isActive,
-    'sort_order': sortOrder,
+    ...(categoryId ? { id: categoryId } : {}),
+    name,
+    slug: slugify(name),
+    description,
+    is_active: isActive,
+    sort_order: sortOrder,
   };
 
   const result = categoryId == null || categoryId.isEmpty
