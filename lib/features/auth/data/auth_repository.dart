@@ -28,7 +28,12 @@ class AuthRepository {
       data: {'full_name': fullName, 'role': role.name, 'phone': phone},
     );
 
-    return response.session == null;
+    final requiresVerification = response.session == null;
+    if (requiresVerification) {
+      await sendEmailVerificationCode(email: email);
+    }
+
+    return requiresVerification;
   }
 
   Future<void> verifySignUpCode({
@@ -38,12 +43,20 @@ class AuthRepository {
     await _supabase.auth.verifyOTP(
       email: email,
       token: code,
-      type: OtpType.signup,
+      type: OtpType.email,
     );
   }
 
   Future<void> resendSignUpCode({required String email}) async {
-    await _supabase.auth.resend(email: email, type: OtpType.signup);
+    await sendEmailVerificationCode(email: email);
+  }
+
+  Future<void> sendEmailVerificationCode({required String email}) async {
+    await _supabase.auth.signInWithOtp(
+      email: email,
+      emailRedirectTo: AppEnv.redirectUrl,
+      shouldCreateUser: false,
+    );
   }
 
   Future<void> signOut() => _supabase.auth.signOut();
