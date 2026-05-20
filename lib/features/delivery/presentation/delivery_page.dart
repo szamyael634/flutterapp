@@ -16,12 +16,36 @@ class DeliveryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final riderId = ref.watch(currentUserIdProvider);
+    final profile = ref.watch(currentUserProfileProvider).valueOrNull;
     final future = switch (mode) {
       DeliveryMode.available => ref.watch(_availableDeliveriesProvider),
       DeliveryMode.assigned => ref.watch(
         _assignedDeliveriesProvider(riderId ?? ''),
       ),
     };
+
+    if (!(profile?.canDeliver ?? false)) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            mode == DeliveryMode.available
+                ? 'Delivery requests'
+                : 'Assigned deliveries',
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              profile?.isAdmin ?? false
+                  ? 'Admin accounts can monitor the system but cannot claim or update deliveries.'
+                  : 'Only approved rider accounts can access delivery handling.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(

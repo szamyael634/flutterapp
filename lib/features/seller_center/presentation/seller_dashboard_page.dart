@@ -81,8 +81,26 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
   @override
   Widget build(BuildContext context) {
     final userId = ref.watch(currentUserIdProvider);
+    final profile = ref.watch(currentUserProfileProvider).valueOrNull;
     if (userId == null) {
       return const SizedBox.shrink();
+    }
+
+    if (profile != null && !profile.canSell) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Seller Center')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              profile.isAdmin
+                  ? 'Admin accounts can oversee seller activity but cannot manage store inventory or product handling.'
+                  : 'Only approved seller accounts can manage store profiles, inventory, and recommendations.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
     }
 
     final store = ref.watch(sellerStoreProvider);

@@ -19,11 +19,18 @@ class AppUser {
   final ApprovalStatus approvalStatus;
   final String? phone;
 
-  bool get canSell =>
-      role == AppRole.seller && approvalStatus == ApprovalStatus.approved;
+  bool get isBuyer => role == AppRole.buyer;
+  bool get isSeller => role == AppRole.seller;
+  bool get isRider => role == AppRole.rider;
+  bool get isAdmin => role == AppRole.admin;
 
-  bool get canDeliver =>
-      role == AppRole.rider && approvalStatus == ApprovalStatus.approved;
+  bool get canBuy => isBuyer && approvalStatus == ApprovalStatus.approved;
+  bool get canSell => isSeller && approvalStatus == ApprovalStatus.approved;
+
+  bool get canDeliver => isRider && approvalStatus == ApprovalStatus.approved;
+
+  bool get canManageAdminConsole =>
+      isAdmin && approvalStatus == ApprovalStatus.approved;
 
   factory AppUser.fromMap(Map<String, dynamic> map) {
     return AppUser(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/extensions/build_context_x.dart';
-import '../../../core/models/app_user.dart';
 import '../../../core/models/product.dart';
 import '../../../core/providers/supabase.dart';
 import '../../../core/utils/formatters.dart';
@@ -44,7 +43,7 @@ class ProductDetailPage extends ConsumerWidget {
           Text(product.name, style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 8),
           Text(product.description),
-          if (profile?.role == AppRole.buyer && userId != null) ...[
+          if (profile?.canBuy ?? false) ...[
             const SizedBox(height: 16),
             AsyncValueView(
               value: isFavorite,
@@ -56,14 +55,14 @@ class ProductDetailPage extends ConsumerWidget {
                       await ref
                           .read(favoritesRepositoryProvider)
                           .removeFavorite(
-                            buyerId: userId,
+                            buyerId: userId!,
                             storeId: product.storeId,
                           );
                     } else {
                       await ref
                           .read(favoritesRepositoryProvider)
                           .saveFavorite(
-                            buyerId: userId,
+                            buyerId: userId!,
                             storeId: product.storeId,
                           );
                     }
@@ -131,22 +130,34 @@ class ProductDetailPage extends ConsumerWidget {
                   ),
           ),
           const SizedBox(height: 24),
-          FilledButton(
-            onPressed: () async {
-              if (userId == null) {
-                context.showSnackBar('Please log in first.', isError: true);
-                return;
-              }
-              await ref
-                  .read(cartRepositoryProvider)
-                  .addToCart(buyerId: userId, product: product);
-              ref.invalidate(cartProvider);
-              if (context.mounted) {
-                context.showSnackBar('${product.name} added to cart');
-              }
-            },
-            child: const Text('Add to cart'),
-          ),
+          if (profile?.canBuy ?? false)
+            FilledButton(
+              onPressed: () async {
+                if (userId == null) {
+                  context.showSnackBar('Please log in first.', isError: true);
+                  return;
+                }
+                await ref
+                    .read(cartRepositoryProvider)
+                    .addToCart(buyerId: userId, product: product);
+                ref.invalidate(cartProvider);
+                if (context.mounted) {
+                  context.showSnackBar('${product.name} added to cart');
+                }
+              },
+              child: const Text('Add to cart'),
+            ),
+          if (!(profile?.canBuy ?? false))
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  profile?.isAdmin ?? false
+                      ? 'Admin accounts can monitor products but cannot purchase or manage buyer-only actions.'
+                      : 'Only buyer accounts can purchase items and save stores.',
+                ),
+              ),
+            ),
         ],
       ),
     );

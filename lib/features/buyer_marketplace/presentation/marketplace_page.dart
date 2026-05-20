@@ -17,6 +17,7 @@ class MarketplacePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final products = ref.watch(marketplaceProductsProvider);
     final deals = ref.watch(discountDealsProvider);
+    final profile = ref.watch(currentUserProfileProvider).valueOrNull;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Save Food Deals')),
@@ -58,7 +59,10 @@ class MarketplacePage extends ConsumerWidget {
                     final product = items[index];
                     return SizedBox(
                       width: 280,
-                      child: _DealCard(product: product),
+                      child: _DealCard(
+                        product: product,
+                        canOpenDetail: !(profile?.isAdmin ?? false),
+                      ),
                     );
                   },
                 ),
@@ -74,7 +78,11 @@ class MarketplacePage extends ConsumerWidget {
                     .map(
                       (product) => Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: _ProductCard(product: product),
+                        child: _ProductCard(
+                          product: product,
+                          canPurchase: profile?.canBuy ?? false,
+                          canOpenDetail: !(profile?.isAdmin ?? false),
+                        ),
                       ),
                     )
                     .toList(),
@@ -88,22 +96,25 @@ class MarketplacePage extends ConsumerWidget {
 }
 
 class _DealCard extends StatelessWidget {
-  const _DealCard({required this.product});
+  const _DealCard({required this.product, required this.canOpenDetail});
 
   final Product product;
+  final bool canOpenDetail;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => ProductDetailPage(product: product),
-            ),
-          );
-        },
+        onTap: canOpenDetail
+            ? () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => ProductDetailPage(product: product),
+                  ),
+                );
+              }
+            : null,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -128,9 +139,15 @@ class _DealCard extends StatelessWidget {
 }
 
 class _ProductCard extends ConsumerWidget {
-  const _ProductCard({required this.product});
+  const _ProductCard({
+    required this.product,
+    required this.canPurchase,
+    required this.canOpenDetail,
+  });
 
   final Product product;
+  final bool canPurchase;
+  final bool canOpenDetail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -151,30 +168,34 @@ class _ProductCard extends ConsumerWidget {
             Text('Expires ${AppFormatters.shortDate(product.expirationAt)}'),
           ],
         ),
-        trailing: FilledButton(
-          onPressed: () async {
-            final userId = ref.read(currentUserIdProvider);
-            if (userId == null) {
-              context.showSnackBar('Please log in first.', isError: true);
-              return;
-            }
-            await ref
-                .read(cartRepositoryProvider)
-                .addToCart(buyerId: userId, product: product);
-            ref.invalidate(cartProvider);
-            if (context.mounted) {
-              context.showSnackBar('${product.name} added to cart');
-            }
-          },
-          child: const Text('Add'),
-        ),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => ProductDetailPage(product: product),
-            ),
-          );
-        },
+        trailing: canPurchase
+            ? FilledButton(
+                onPressed: () async {
+                  final userId = ref.read(currentUserIdProvider);
+                  if (userId == null) {
+                    context.showSnackBar('Please log in first.', isError: true);
+                    return;
+                  }
+                  await ref
+                      .read(cartRepositoryProvider)
+                      .addToCart(buyerId: userId, product: product);
+                  ref.invalidate(cartProvider);
+                  if (context.mounted) {
+                    context.showSnackBar('${product.name} added to cart');
+                  }
+                },
+                child: const Text('Add'),
+              )
+            : null,
+        onTap: canOpenDetail
+            ? () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => ProductDetailPage(product: product),
+                  ),
+                );
+              }
+            : null,
       ),
     );
   }

@@ -69,8 +69,7 @@ class _OrderCard extends ConsumerWidget {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  if (order.status == OrderStatus.delivered &&
-                      user!.role == AppRole.buyer)
+                  if (order.status == OrderStatus.delivered && user!.canBuy)
                     FilledButton.tonal(
                       onPressed: () async {
                         final targets = await ref
@@ -89,24 +88,22 @@ class _OrderCard extends ConsumerWidget {
                       },
                       child: const Text('Leave review'),
                     ),
-                  OutlinedButton(
-                    onPressed: () async {
-                      if (user == null) {
-                        return;
-                      }
-                      await _showDisputeDialog(
-                        context,
-                        ref,
-                        order: order,
-                        reporterId: user!.id,
-                      );
-                    },
-                    child: const Text('Report issue'),
-                  ),
+                  if (user!.canBuy)
+                    OutlinedButton(
+                      onPressed: () async {
+                        await _showDisputeDialog(
+                          context,
+                          ref,
+                          order: order,
+                          reporterId: user!.id,
+                        );
+                      },
+                      child: const Text('Report issue'),
+                    ),
                 ],
               ),
             ],
-            if (user?.role == AppRole.seller) ...[
+            if (user?.canSell ?? false) ...[
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
