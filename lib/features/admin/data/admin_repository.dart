@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/product_category.dart';
 import '../../../core/providers/supabase.dart';
 import '../models/admin_dashboard_data.dart';
+import '../models/admin_operations_data.dart';
 import '../models/admin_user_record.dart';
 import '../models/seller_verification_review.dart';
 
@@ -98,6 +99,15 @@ class AdminRepository {
     return rows.map(ProductCategory.fromMap).toList();
   }
 
+  Future<AdminOperationsData> fetchOperations() async {
+    final response = await _supabase.functions.invoke(
+      'admin-console',
+      body: {'action': 'operations'},
+    );
+    final data = Map<String, dynamic>.from(response.data as Map);
+    return AdminOperationsData.fromMap(data);
+  }
+
   Future<void> saveCategory({
     String? id,
     required String name,
@@ -147,4 +157,10 @@ final adminCategoriesProvider = FutureProvider<List<ProductCategory>>((
   ref,
 ) async {
   return ref.watch(adminRepositoryProvider).fetchCategories();
+});
+
+final adminOperationsProvider = FutureProvider<AdminOperationsData>((
+  ref,
+) async {
+  return ref.watch(adminRepositoryProvider).fetchOperations();
 });

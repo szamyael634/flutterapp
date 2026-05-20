@@ -321,6 +321,89 @@ async function fetchCategories() {
   return { categories: data ?? [] };
 }
 
+async function fetchOperations() {
+  const supabase = createAdminClient();
+
+  const { data: orders, error: orderError } = await supabase
+    .from('orders')
+    .select(
+      'id, order_number, status, payment_method, payment_status, total_amount, created_at, store_id, buyer_id',
+    )
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  if (orderError) {
+    throw new Error(orderError.message);
+  }
+
+  const { data: products, error: productError } = await supabase
+    .from('products')
+    .select(
+      'id, name, category, listing_status, recommendation_status, current_price, quantity, discount_percent, expiration_at, store_id',
+    )
+    .order('updated_at', { ascending: false })
+    .limit(20);
+
+  if (productError) {
+    throw new Error(productError.message);
+  }
+
+  const storeIds = [
+    ...new Set([
+      ...(orders ?? []).map((item) => item.store_id),
+      ...(products ?? []).map((item) => item.store_id),
+    ]),
+  ].filter(Boolean);
+  const buyerIds = [
+    ...new Set((orders ?? []).map((item) => item.buyer_id)),
+  ].filter(Boolean);
+
+  let storeMap = new Map<string, string>();
+  let buyerMap = new Map<string, string>();
+
+  if (storeIds.length > 0) {
+    const { data: stores, error: storeError } = await supabase
+      .from('stores')
+      .select('id, name')
+      .in('id', storeIds);
+
+    if (storeError) {
+      throw new Error(storeError.message);
+    }
+
+    storeMap = new Map(
+      (stores ?? []).map((store) => [store.id as string, store.name as string]),
+    );
+  }
+
+  if (buyerIds.length > 0) {
+    const { data: buyers, error: buyerError } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .in('id', buyerIds);
+
+    if (buyerError) {
+      throw new Error(buyerError.message);
+    }
+
+    buyerMap = new Map(
+      (buyers ?? []).map((buyer) => [buyer.id as string, buyer.email as string]),
+    );
+  }
+
+  return {
+    orders: (orders ?? []).map((order) => ({
+      ...order,
+      store_name: storeMap.get(order.store_id) ?? 'Unknown store',
+      buyer_email: buyerMap.get(order.buyer_id) ?? '',
+    })),
+    products: (products ?? []).map((product) => ({
+      ...product,
+      store_name: storeMap.get(product.store_id) ?? 'Unknown store',
+    })),
+  };
+}
+
 async function saveCategory(body: JsonMap) {
   const supabase = createAdminClient();
   const categoryId = body.id?.toString();
@@ -411,6 +494,8 @@ serve(async (request) => {
         return jsonResponse(await reviewVerification(body));
       case 'list_categories':
         return jsonResponse(await fetchCategories());
+      case 'operations':
+        return jsonResponse(await fetchOperations());
       case 'save_category':
         return jsonResponse(await saveCategory(body));
       case 'toggle_category':
