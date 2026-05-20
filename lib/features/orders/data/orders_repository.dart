@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/app_user.dart';
 import '../../../core/models/cart_item.dart';
 import '../../../core/models/order.dart';
+import '../../../core/models/order_review_target.dart';
 import '../../../core/providers/supabase.dart';
 
 class CheckoutResult {
@@ -112,6 +113,71 @@ class OrdersRepository {
         .from('orders')
         .update({'status': status})
         .eq('id', orderId);
+  }
+
+  Future<List<OrderReviewTarget>> fetchReviewTargets({
+    required OrderRecord order,
+  }) async {
+    final targets = <OrderReviewTarget>[];
+
+    final store = await _supabase
+        .from('stores')
+        .select('owner_id, name')
+        .eq('id', order.storeId)
+        .maybeSingle();
+
+    if (store != null) {
+      targets.add(
+        OrderReviewTarget(
+          targetType: 'seller',
+          targetId: store['owner_id'] as String,
+          label: store['name'] as String? ?? 'Seller',
+        ),
+      );
+    }
+
+    final orderItems = await _supabase
+        .from('order_items')
+        .select('product_id, products(name)')
+        .eq('order_id', order.id);
+
+    for (final row in orderItems) {
+      final map = Map<String, dynamic>.from(row);
+      final product = Map<String, dynamic>.from(
+        map['products'] as Map? ?? const {},
+      );
+      targets.add(
+        OrderReviewTarget(
+          targetType: 'product',
+          targetId: map['product_id'] as String,
+          label: product['name'] as String? ?? 'Product',
+        ),
+      );
+    }
+
+    final delivery = await _supabase
+        .from('deliveries')
+        .select('rider_id')
+        .eq('order_id', order.id)
+        .maybeSingle();
+
+    final riderId = delivery?['rider_id'] as String?;
+    if (riderId != null) {
+      final riderProfile = await _supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', riderId)
+          .maybeSingle();
+      targets.add(
+        OrderReviewTarget(
+          targetType: 'rider',
+          targetId: riderId,
+          label: riderProfile?['full_name'] as String? ?? 'Rider',
+        ),
+      );
+    }
+
+    return targets;
   }
 }
 

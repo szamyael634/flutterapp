@@ -63,6 +63,10 @@ class AdminDashboardPage extends ConsumerWidget {
                         label: 'Pending verifications',
                         value: '${data.metrics.pendingVerifications}',
                       ),
+                      _MetricCard(
+                        label: 'Open disputes',
+                        value: '${data.metrics.openDisputes}',
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),

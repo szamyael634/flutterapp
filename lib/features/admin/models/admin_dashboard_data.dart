@@ -30,6 +30,7 @@ class AdminDashboardMetrics {
     required this.estimatedFoodSaved,
     required this.reducedCommissionValue,
     required this.pendingVerifications,
+    required this.openDisputes,
   });
 
   final int totalUsers;
@@ -42,6 +43,7 @@ class AdminDashboardMetrics {
   final int estimatedFoodSaved;
   final double reducedCommissionValue;
   final int pendingVerifications;
+  final int openDisputes;
 
   factory AdminDashboardMetrics.fromMap(Map<String, dynamic> map) {
     return AdminDashboardMetrics(
@@ -56,6 +58,7 @@ class AdminDashboardMetrics {
       reducedCommissionValue:
           (map['reduced_commission_value'] as num?)?.toDouble() ?? 0,
       pendingVerifications: map['pending_verifications'] as int? ?? 0,
+      openDisputes: map['open_disputes'] as int? ?? 0,
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/models/app_user.dart';
 import '../../admin/presentation/admin_categories_page.dart';
 import '../../admin/presentation/admin_dashboard_page.dart';
+import '../../admin/presentation/admin_disputes_page.dart';
 import '../../admin/presentation/admin_operations_page.dart';
 import '../../admin/presentation/admin_users_page.dart';
 import '../../buyer_marketplace/presentation/marketplace_page.dart';
@@ -101,6 +102,7 @@ class _HomeShellState extends State<HomeShell> {
             AdminDashboardPage(),
             AdminUsersPage(),
             AdminOperationsPage(),
+            AdminDisputesPage(),
             AdminCategoriesPage(),
             NotificationsPage(),
             ProfilePage(),
@@ -117,6 +119,10 @@ class _HomeShellState extends State<HomeShell> {
             NavigationDestination(
               icon: Icon(Icons.monitor_heart),
               label: 'Monitor',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.support_agent),
+              label: 'Disputes',
             ),
             NavigationDestination(
               icon: Icon(Icons.category),

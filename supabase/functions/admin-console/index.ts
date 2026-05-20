@@ -69,6 +69,7 @@ async function fetchDashboard() {
     totalStores,
     pendingApprovals,
     reducedCommissionOrders,
+    openDisputes,
   ] = await Promise.all([
     countRows(supabase, 'profiles'),
     countRows(
@@ -95,6 +96,7 @@ async function fetchDashboard() {
       'commission_records',
       (query) => query.eq('is_reduced', true),
     ),
+    countRows(supabase, 'disputes', (query) => query.eq('status', 'open')),
   ]);
 
   const { data: deliveredOrders, error: deliveredOrdersError } = await supabase
@@ -146,6 +148,7 @@ async function fetchDashboard() {
       estimated_food_saved: reducedCommissionOrders,
       reduced_commission_value: reducedCommissionSavings,
       pending_verifications: pendingVerifications?.length ?? 0,
+      open_disputes: openDisputes,
     },
     recent_orders: deliveredOrders ?? [],
   };
@@ -404,6 +407,106 @@ async function fetchOperations() {
   };
 }
 
+async function fetchDisputes() {
+  const supabase = createAdminClient();
+
+  const { data: disputes, error } = await supabase
+    .from('disputes')
+    .select(
+      'id, order_id, reporter_id, status, category, title, description, resolution_notes, created_at',
+    )
+    .order('created_at', { ascending: false })
+    .limit(30);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const orderIds = [...new Set((disputes ?? []).map((item) => item.order_id))];
+  const reporterIds = [...new Set((disputes ?? []).map((item) => item.reporter_id))];
+
+  let orderMap = new Map<string, string>();
+  let reporterMap = new Map<string, string>();
+
+  if (orderIds.length > 0) {
+    const { data: orders, error: orderError } = await supabase
+      .from('orders')
+      .select('id, order_number')
+      .in('id', orderIds);
+
+    if (orderError) {
+      throw new Error(orderError.message);
+    }
+
+    orderMap = new Map(
+      (orders ?? []).map((order) => [order.id as string, order.order_number as string]),
+    );
+  }
+
+  if (reporterIds.length > 0) {
+    const { data: reporters, error: reporterError } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .in('id', reporterIds);
+
+    if (reporterError) {
+      throw new Error(reporterError.message);
+    }
+
+    reporterMap = new Map(
+      (reporters ?? []).map((reporter) => [reporter.id as string, reporter.email as string]),
+    );
+  }
+
+  return {
+    disputes: (disputes ?? []).map((item) => ({
+      ...item,
+      order_number: orderMap.get(item.order_id) ?? 'MK-UNKNOWN',
+      reporter_email: reporterMap.get(item.reporter_id) ?? '',
+    })),
+  };
+}
+
+async function updateDisputeStatus(body: JsonMap) {
+  const supabase = createAdminClient();
+  const disputeId = body.dispute_id?.toString();
+  const status = body.status?.toString();
+  const resolutionNotes = body.resolution_notes?.toString() ?? '';
+
+  if (!disputeId || !status) {
+    throw new Error('dispute_id and status are required.');
+  }
+
+  const { data: dispute, error } = await supabase
+    .from('disputes')
+    .update({
+      status,
+      resolution_notes: resolutionNotes,
+    })
+    .eq('id', disputeId)
+    .select('id, reporter_id, title')
+    .single();
+
+  if (error || !dispute) {
+    throw new Error(error?.message ?? 'Unable to update dispute.');
+  }
+
+  await supabase.from('notifications').insert({
+    user_id: dispute.reporter_id,
+    title: 'Dispute updated',
+    body: resolutionNotes.isEmpty
+      ? `Your dispute "${dispute.title}" is now ${status}.`
+      : resolutionNotes,
+    type: 'dispute',
+    metadata: {
+      dispute_id: disputeId,
+      status,
+    },
+  });
+
+  return { ok: true };
+}
+
 async function saveCategory(body: JsonMap) {
   const supabase = createAdminClient();
   const categoryId = body.id?.toString();
@@ -494,6 +597,10 @@ serve(async (request) => {
         return jsonResponse(await reviewVerification(body));
       case 'list_categories':
         return jsonResponse(await fetchCategories());
+      case 'list_disputes':
+        return jsonResponse(await fetchDisputes());
+      case 'update_dispute_status':
+        return jsonResponse(await updateDisputeStatus(body));
       case 'operations':
         return jsonResponse(await fetchOperations());
       case 'save_category':

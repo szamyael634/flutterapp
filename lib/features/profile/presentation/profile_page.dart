@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/models/app_user.dart';
 import '../../../core/providers/supabase.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../disputes/data/disputes_repository.dart';
+import '../data/favorites_repository.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -26,6 +30,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(currentUserProfileProvider);
+    final favorites = ref.watch(favoriteStoresProvider);
+    final disputes = ref.watch(disputesProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
@@ -52,6 +58,83 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       Text(user.email),
                       Text('Role: ${user.role.name}'),
                       Text('Approval: ${user.approvalStatus.name}'),
+                    ],
+                  ),
+                ),
+              ),
+              if (user.role == AppRole.buyer) ...[
+                const SizedBox(height: 12),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Saved stores',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 12),
+                        AsyncValueView(
+                          value: favorites,
+                          data: (items) => items.isEmpty
+                              ? const Text('No saved stores yet.')
+                              : Column(
+                                  children: items
+                                      .map(
+                                        (store) => ListTile(
+                                          contentPadding: EdgeInsets.zero,
+                                          title: Text(store.storeName),
+                                          subtitle: Text(
+                                            store.storeAddress.isEmpty
+                                                ? store.storeDescription
+                                                : store.storeAddress,
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Support cases',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 12),
+                      AsyncValueView(
+                        value: disputes,
+                        data: (items) => items.isEmpty
+                            ? const Text('No disputes submitted.')
+                            : Column(
+                                children: items
+                                    .map(
+                                      (dispute) => ListTile(
+                                        contentPadding: EdgeInsets.zero,
+                                        title: Text(dispute.title),
+                                        subtitle: Text(
+                                          '${dispute.status} - ${dispute.category}',
+                                        ),
+                                        trailing: Text(
+                                          AppFormatters.shortDate(
+                                            dispute.createdAt,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                      ),
                     ],
                   ),
                 ),

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/product_category.dart';
 import '../../../core/providers/supabase.dart';
 import '../models/admin_dashboard_data.dart';
+import '../models/admin_dispute_record.dart';
 import '../models/admin_operations_data.dart';
 import '../models/admin_user_record.dart';
 import '../models/seller_verification_review.dart';
@@ -108,6 +109,36 @@ class AdminRepository {
     return AdminOperationsData.fromMap(data);
   }
 
+  Future<List<AdminDisputeRecord>> fetchDisputes() async {
+    final response = await _supabase.functions.invoke(
+      'admin-console',
+      body: {'action': 'list_disputes'},
+    );
+    final data = Map<String, dynamic>.from(response.data as Map);
+    final rows = List<Map<String, dynamic>>.from(
+      (data['disputes'] as List<dynamic>? ?? []).map(
+        (item) => Map<String, dynamic>.from(item as Map),
+      ),
+    );
+    return rows.map(AdminDisputeRecord.fromMap).toList();
+  }
+
+  Future<void> updateDisputeStatus({
+    required String disputeId,
+    required String status,
+    required String resolutionNotes,
+  }) {
+    return _supabase.functions.invoke(
+      'admin-console',
+      body: {
+        'action': 'update_dispute_status',
+        'dispute_id': disputeId,
+        'status': status,
+        'resolution_notes': resolutionNotes,
+      },
+    );
+  }
+
   Future<void> saveCategory({
     String? id,
     required String name,
@@ -163,4 +194,10 @@ final adminOperationsProvider = FutureProvider<AdminOperationsData>((
   ref,
 ) async {
   return ref.watch(adminRepositoryProvider).fetchOperations();
+});
+
+final adminDisputesProvider = FutureProvider<List<AdminDisputeRecord>>((
+  ref,
+) async {
+  return ref.watch(adminRepositoryProvider).fetchDisputes();
 });
