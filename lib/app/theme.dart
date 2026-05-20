@@ -17,18 +17,14 @@ ThemeData buildAppTheme() {
       centerTitle: false,
     ),
     inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
       filled: true,
       fillColor: Colors.white,
     ),
     cardTheme: CardThemeData(
       color: Colors.white,
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
     ),
     navigationBarTheme: NavigationBarThemeData(
       height: 72,
@@ -42,9 +38,7 @@ ThemeData buildAppTheme() {
       ),
     ),
     chipTheme: ChipThemeData(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(999),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
     ),
   );
 }

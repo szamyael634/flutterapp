@@ -38,9 +38,9 @@ class ProfileRepository {
     required String fullName,
     required String? phone,
   }) {
-    return _supabase.from('profiles').update({
-      'full_name': fullName,
-      'phone': phone,
-    }).eq('id', userId);
+    return _supabase
+        .from('profiles')
+        .update({'full_name': fullName, 'phone': phone})
+        .eq('id', userId);
   }
 }

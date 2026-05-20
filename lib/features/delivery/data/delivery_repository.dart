@@ -41,10 +41,10 @@ class DeliveryRepository {
     required String deliveryId,
     required String riderId,
   }) {
-    return _supabase.from('deliveries').update({
-      'rider_id': riderId,
-      'status': 'assigned',
-    }).eq('id', deliveryId);
+    return _supabase
+        .from('deliveries')
+        .update({'rider_id': riderId, 'status': 'assigned'})
+        .eq('id', deliveryId);
   }
 
   Future<void> updateStatus({

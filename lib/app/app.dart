@@ -80,10 +80,7 @@ class AppBootstrap extends ConsumerWidget {
 }
 
 class _PaymentResultRoute {
-  const _PaymentResultRoute({
-    required this.orderId,
-    required this.status,
-  });
+  const _PaymentResultRoute({required this.orderId, required this.status});
 
   final String orderId;
   final String status;
@@ -94,11 +91,7 @@ class _SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
 
@@ -122,10 +115,7 @@ class _AppErrorScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
-              Text(
-                error.toString(),
-                textAlign: TextAlign.center,
-              ),
+              Text(error.toString(), textAlign: TextAlign.center),
             ],
           ),
         ),
@@ -166,7 +156,9 @@ class _MissingConfigurationPage extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const SelectableText(

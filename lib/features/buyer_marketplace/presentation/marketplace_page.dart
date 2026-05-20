@@ -19,9 +19,7 @@ class MarketplacePage extends ConsumerWidget {
     final deals = ref.watch(discountDealsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Save Food Deals'),
-      ),
+      appBar: AppBar(title: const Text('Save Food Deals')),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(marketplaceProductsProvider);
@@ -67,10 +65,7 @@ class MarketplacePage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-              'Marketplace',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text('Marketplace', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             AsyncValueView(
               value: products,
@@ -123,9 +118,7 @@ class _DealCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(AppFormatters.currency(product.currentPrice)),
               const SizedBox(height: 8),
-              Text(
-                'Expires ${AppFormatters.shortDate(product.expirationAt)}',
-              ),
+              Text('Expires ${AppFormatters.shortDate(product.expirationAt)}'),
             ],
           ),
         ),
@@ -152,7 +145,7 @@ class _ProductCard extends ConsumerWidget {
             Text(product.description),
             const SizedBox(height: 8),
             Text(
-              '${AppFormatters.currency(product.currentPrice)} • ${product.category}',
+              '${AppFormatters.currency(product.currentPrice)} - ${product.category}',
             ),
             const SizedBox(height: 8),
             Text('Expires ${AppFormatters.shortDate(product.expirationAt)}'),
@@ -165,10 +158,9 @@ class _ProductCard extends ConsumerWidget {
               context.showSnackBar('Please log in first.', isError: true);
               return;
             }
-            await ref.read(cartRepositoryProvider).addToCart(
-                  buyerId: userId,
-                  product: product,
-                );
+            await ref
+                .read(cartRepositoryProvider)
+                .addToCart(buyerId: userId, product: product);
             ref.invalidate(cartProvider);
             if (context.mounted) {
               context.showSnackBar('${product.name} added to cart');

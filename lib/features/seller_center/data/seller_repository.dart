@@ -43,7 +43,9 @@ class SellerRepository {
         .toList();
   }
 
-  Future<List<ProductRecommendation>> fetchRecommendations(String ownerId) async {
+  Future<List<ProductRecommendation>> fetchRecommendations(
+    String ownerId,
+  ) async {
     final store = await fetchStore(ownerId);
     if (store == null) {
       return [];
@@ -90,7 +92,8 @@ class SellerRepository {
       throw StateError('Selected file bytes are not available.');
     }
 
-    final path = '$ownerId/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
+    final path =
+        '$ownerId/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
     await _supabase.storage
         .from('verification-documents')
         .uploadBinary(path, bytes);
@@ -145,7 +148,10 @@ class SellerRepository {
         .single();
 
     if (image != null) {
-      final imageUrl = await _uploadProductImage(inserted['id'] as String, image);
+      final imageUrl = await _uploadProductImage(
+        inserted['id'] as String,
+        image,
+      );
       await _supabase.from('product_images').insert({
         'product_id': inserted['id'],
         'image_url': imageUrl,
@@ -159,15 +165,10 @@ class SellerRepository {
     );
   }
 
-  Future<void> acceptRecommendation({
-    required String recommendationId,
-  }) {
+  Future<void> acceptRecommendation({required String recommendationId}) {
     return _supabase.functions.invoke(
       'refresh-product-recommendations',
-      body: {
-        'recommendation_id': recommendationId,
-        'action': 'accept',
-      },
+      body: {'recommendation_id': recommendationId, 'action': 'accept'},
     );
   }
 
@@ -180,7 +181,8 @@ class SellerRepository {
       throw StateError('Selected file bytes are not available.');
     }
 
-    final path = '$productId/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
+    final path =
+        '$productId/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
     await _supabase.storage.from('product-images').uploadBinary(path, bytes);
     return _supabase.storage.from('product-images').getPublicUrl(path);
   }

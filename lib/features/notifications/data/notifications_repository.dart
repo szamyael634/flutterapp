@@ -31,12 +31,15 @@ class NotificationsRepository {
   }
 }
 
-final notificationsRepositoryProvider =
-    Provider<NotificationsRepository>((ref) {
+final notificationsRepositoryProvider = Provider<NotificationsRepository>((
+  ref,
+) {
   return NotificationsRepository(ref.watch(supabaseClientProvider));
 });
 
-final notificationsProvider = FutureProvider<List<AppNotification>>((ref) async {
+final notificationsProvider = FutureProvider<List<AppNotification>>((
+  ref,
+) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) {
     return [];

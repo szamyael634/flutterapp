@@ -12,14 +12,8 @@ class AuthRepository {
   final SupabaseClient _supabase;
   final ProfileRepository _profiles;
 
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) {
-    return _supabase.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+  Future<void> signIn({required String email, required String password}) {
+    return _supabase.auth.signInWithPassword(email: email, password: password);
   }
 
   Future<void> signUp({
@@ -33,11 +27,7 @@ class AuthRepository {
       email: email,
       password: password,
       emailRedirectTo: AppEnv.redirectUrl,
-      data: {
-        'full_name': fullName,
-        'role': role.name,
-        'phone': phone,
-      },
+      data: {'full_name': fullName, 'role': role.name, 'phone': phone},
     );
 
     final user = response.user;

@@ -26,7 +26,9 @@ class NotificationsPage extends ConsumerWidget {
               child: Card(
                 child: ListTile(
                   title: Text(item.title),
-                  subtitle: Text('${item.body}\n${AppFormatters.shortDate(item.createdAt)}'),
+                  subtitle: Text(
+                    '${item.body}\n${AppFormatters.shortDate(item.createdAt)}',
+                  ),
                 ),
               ),
             );

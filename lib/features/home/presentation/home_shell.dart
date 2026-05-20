@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/models/app_user.dart';
+import '../../admin/presentation/admin_categories_page.dart';
+import '../../admin/presentation/admin_dashboard_page.dart';
+import '../../admin/presentation/admin_users_page.dart';
 import '../../buyer_marketplace/presentation/marketplace_page.dart';
 import '../../cart/presentation/cart_page.dart';
 import '../../delivery/presentation/delivery_page.dart';
@@ -49,10 +52,19 @@ class _HomeShellState extends State<HomeShell> {
             ProfilePage(),
           ],
           destinations: const [
-            NavigationDestination(icon: Icon(Icons.storefront), label: 'Market'),
-            NavigationDestination(icon: Icon(Icons.receipt_long), label: 'Orders'),
+            NavigationDestination(
+              icon: Icon(Icons.storefront),
+              label: 'Market',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.receipt_long),
+              label: 'Orders',
+            ),
             NavigationDestination(icon: Icon(Icons.eco), label: 'Seller'),
-            NavigationDestination(icon: Icon(Icons.notifications), label: 'Alerts'),
+            NavigationDestination(
+              icon: Icon(Icons.notifications),
+              label: 'Alerts',
+            ),
             NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
           ],
         );
@@ -67,13 +79,50 @@ class _HomeShellState extends State<HomeShell> {
           ],
           destinations: const [
             NavigationDestination(icon: Icon(Icons.route), label: 'Requests'),
-            NavigationDestination(icon: Icon(Icons.two_wheeler), label: 'Assigned'),
-            NavigationDestination(icon: Icon(Icons.receipt_long), label: 'Orders'),
-            NavigationDestination(icon: Icon(Icons.notifications), label: 'Alerts'),
+            NavigationDestination(
+              icon: Icon(Icons.two_wheeler),
+              label: 'Assigned',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.receipt_long),
+              label: 'Orders',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.notifications),
+              label: 'Alerts',
+            ),
             NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
           ],
         );
       case AppRole.admin:
+        return _ShellConfig(
+          pages: const [
+            AdminDashboardPage(),
+            AdminUsersPage(),
+            AdminCategoriesPage(),
+            NotificationsPage(),
+            ProfilePage(),
+          ],
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.dashboard),
+              label: 'Overview',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.verified_user),
+              label: 'Approvals',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.category),
+              label: 'Categories',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.notifications),
+              label: 'Alerts',
+            ),
+            NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
+          ],
+        );
       case AppRole.buyer:
         return _ShellConfig(
           pages: const [
@@ -84,10 +133,22 @@ class _HomeShellState extends State<HomeShell> {
             ProfilePage(),
           ],
           destinations: const [
-            NavigationDestination(icon: Icon(Icons.storefront), label: 'Market'),
-            NavigationDestination(icon: Icon(Icons.shopping_cart), label: 'Cart'),
-            NavigationDestination(icon: Icon(Icons.receipt_long), label: 'Orders'),
-            NavigationDestination(icon: Icon(Icons.notifications), label: 'Alerts'),
+            NavigationDestination(
+              icon: Icon(Icons.storefront),
+              label: 'Market',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.shopping_cart),
+              label: 'Cart',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.receipt_long),
+              label: 'Orders',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.notifications),
+              label: 'Alerts',
+            ),
             NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
           ],
         );
@@ -96,10 +157,7 @@ class _HomeShellState extends State<HomeShell> {
 }
 
 class _ShellConfig {
-  const _ShellConfig({
-    required this.pages,
-    required this.destinations,
-  });
+  const _ShellConfig({required this.pages, required this.destinations});
 
   final List<Widget> pages;
   final List<NavigationDestination> destinations;

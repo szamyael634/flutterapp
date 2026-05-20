@@ -5,18 +5,15 @@ import '../data/auth_repository.dart';
 
 final authControllerProvider =
     StateNotifierProvider<AuthController, AsyncValue<void>>((ref) {
-  return AuthController(ref.watch(authRepositoryProvider));
-});
+      return AuthController(ref.watch(authRepositoryProvider));
+    });
 
 class AuthController extends StateNotifier<AsyncValue<void>> {
   AuthController(this._repository) : super(const AsyncData(null));
 
   final AuthRepository _repository;
 
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> signIn({required String email, required String password}) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
       () => _repository.signIn(email: email, password: password),

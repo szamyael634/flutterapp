@@ -1,11 +1,4 @@
-enum ListingStatus {
-  draft,
-  active,
-  nearExpiry,
-  flashSale,
-  expired,
-  disabled,
-}
+enum ListingStatus { draft, active, nearExpiry, flashSale, expired, disabled }
 
 class Product {
   const Product({
@@ -46,9 +39,11 @@ class Product {
 
   factory Product.fromMap(Map<String, dynamic> map) {
     final images = (map['product_images'] as List<dynamic>? ?? [])
-        .map((entry) => entry is Map<String, dynamic>
-            ? (entry['image_url'] as String? ?? '')
-            : '')
+        .map(
+          (entry) => entry is Map<String, dynamic>
+              ? (entry['image_url'] as String? ?? '')
+              : '',
+        )
         .where((url) => url.isNotEmpty)
         .toList();
 

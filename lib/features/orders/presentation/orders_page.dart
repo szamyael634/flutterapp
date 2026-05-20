@@ -37,10 +37,7 @@ class OrdersPage extends ConsumerWidget {
 }
 
 class _OrderCard extends ConsumerWidget {
-  const _OrderCard({
-    required this.order,
-    required this.user,
-  });
+  const _OrderCard({required this.order, required this.user});
 
   final OrderRecord order;
   final AppUser? user;
@@ -53,7 +50,10 @@ class _OrderCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(order.orderNumber, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              order.orderNumber,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             Text('Status: ${order.status.name}'),
             Text('Payment: ${order.paymentStatus}'),
@@ -66,7 +66,9 @@ class _OrderCard extends ConsumerWidget {
                 children: [
                   OutlinedButton(
                     onPressed: () async {
-                      await ref.read(ordersRepositoryProvider).updateOrderStatus(
+                      await ref
+                          .read(ordersRepositoryProvider)
+                          .updateOrderStatus(
                             orderId: order.id,
                             status: 'seller_confirmed',
                           );
@@ -76,7 +78,9 @@ class _OrderCard extends ConsumerWidget {
                   ),
                   OutlinedButton(
                     onPressed: () async {
-                      await ref.read(ordersRepositoryProvider).updateOrderStatus(
+                      await ref
+                          .read(ordersRepositoryProvider)
+                          .updateOrderStatus(
                             orderId: order.id,
                             status: 'preparing',
                           );
@@ -86,7 +90,9 @@ class _OrderCard extends ConsumerWidget {
                   ),
                   OutlinedButton(
                     onPressed: () async {
-                      await ref.read(ordersRepositoryProvider).updateOrderStatus(
+                      await ref
+                          .read(ordersRepositoryProvider)
+                          .updateOrderStatus(
                             orderId: order.id,
                             status: 'ready_for_pickup',
                           );

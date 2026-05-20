@@ -38,7 +38,9 @@ class PaymentResultPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      isSuccess ? 'Payment successful' : 'Payment not completed',
+                      isSuccess
+                          ? 'Payment successful'
+                          : 'Payment not completed',
                       style: theme.textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 12),

@@ -6,6 +6,7 @@ import '../../../core/extensions/build_context_x.dart';
 import '../../../core/models/product.dart';
 import '../../../core/models/product_recommendation.dart';
 import '../../../core/models/store_profile.dart';
+import '../../../core/providers/catalog.dart';
 import '../../../core/providers/supabase.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/async_value_view.dart';
@@ -29,12 +30,12 @@ final sellerProductsProvider = FutureProvider<List<Product>>((ref) async {
 
 final sellerRecommendationsProvider =
     FutureProvider<List<ProductRecommendation>>((ref) async {
-  final userId = ref.watch(currentUserIdProvider);
-  if (userId == null) {
-    return [];
-  }
-  return ref.watch(sellerRepositoryProvider).fetchRecommendations(userId);
-});
+      final userId = ref.watch(currentUserIdProvider);
+      if (userId == null) {
+        return [];
+      }
+      return ref.watch(sellerRepositoryProvider).fetchRecommendations(userId);
+    });
 
 class SellerDashboardPage extends ConsumerStatefulWidget {
   const SellerDashboardPage({super.key});
@@ -55,7 +56,7 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
   final _allergensController = TextEditingController();
   final _verificationNameController = TextEditingController();
   final _verificationNumberController = TextEditingController();
-  String _category = 'Meals';
+  String? _category;
   String _verificationDocumentType = 'government_id';
   DateTime _preparedAt = DateTime.now();
   DateTime _expirationAt = DateTime.now().add(const Duration(days: 2));
@@ -87,6 +88,7 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
     final store = ref.watch(sellerStoreProvider);
     final products = ref.watch(sellerProductsProvider);
     final recommendations = ref.watch(sellerRecommendationsProvider);
+    final categories = ref.watch(publicCategoriesProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Seller Center')),
@@ -95,6 +97,7 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
           ref.invalidate(sellerStoreProvider);
           ref.invalidate(sellerProductsProvider);
           ref.invalidate(sellerRecommendationsProvider);
+          ref.invalidate(publicCategoriesProvider);
         },
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -123,18 +126,21 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                     data: (storeValue) {
                       if (storeValue != null) {
                         _storeNameController.text = storeValue.name;
-                        _storeDescriptionController.text = storeValue.description;
+                        _storeDescriptionController.text =
+                            storeValue.description;
                         _storeAddressController.text = storeValue.address;
                       }
                       return Align(
                         alignment: Alignment.centerLeft,
                         child: FilledButton(
                           onPressed: () async {
-                            await ref.read(sellerRepositoryProvider).upsertStore(
+                            await ref
+                                .read(sellerRepositoryProvider)
+                                .upsertStore(
                                   ownerId: userId,
                                   name: _storeNameController.text.trim(),
-                                  description:
-                                      _storeDescriptionController.text.trim(),
+                                  description: _storeDescriptionController.text
+                                      .trim(),
                                   address: _storeAddressController.text.trim(),
                                 );
                             ref.invalidate(sellerStoreProvider);
@@ -221,8 +227,9 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                                 .submitVerification(
                                   ownerId: userId,
                                   documentType: _verificationDocumentType,
-                                  claimedFullName:
-                                      _verificationNameController.text.trim(),
+                                  claimedFullName: _verificationNameController
+                                      .text
+                                      .trim(),
                                   claimedCredentialNumber:
                                       _verificationNumberController.text.trim(),
                                   file: _verificationFile!,
@@ -230,10 +237,10 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                             if (context.mounted) {
                               final status =
                                   screening['screening_status']?.toString() ??
-                                      'pending';
+                                  'pending';
                               final notes =
                                   screening['screening_notes']?.toString() ??
-                                      'Verification submitted';
+                                  'Verification submitted';
                               context.showSnackBar(
                                 'Screening: $status. $notes',
                               );
@@ -251,8 +258,9 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                 children: [
                   TextField(
                     controller: _productNameController,
-                    decoration:
-                        const InputDecoration(labelText: 'Product name'),
+                    decoration: const InputDecoration(
+                      labelText: 'Product name',
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
@@ -260,37 +268,42 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                     decoration: const InputDecoration(labelText: 'Description'),
                   ),
                   const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: _category,
-                    decoration: const InputDecoration(labelText: 'Category'),
-                    items: const [
-                      'Bento Boxes',
-                      'Meals',
-                      'Snacks',
-                      'Desserts',
-                      'Drinks',
-                      'Bakery Items',
-                      'Frozen Foods',
-                      'Ready-to-Eat Foods',
-                    ]
-                        .map(
-                          (category) => DropdownMenuItem(
-                            value: category,
-                            child: Text(category),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _category = value);
-                      }
+                  AsyncValueView(
+                    value: categories,
+                    data: (items) {
+                      final selectedCategory =
+                          items.any((item) => item.name == _category)
+                          ? _category
+                          : (items.isNotEmpty ? items.first.name : null);
+
+                      return DropdownButtonFormField<String>(
+                        key: ValueKey(selectedCategory ?? 'no-category'),
+                        initialValue: selectedCategory,
+                        decoration: const InputDecoration(
+                          labelText: 'Category',
+                        ),
+                        items: items
+                            .map(
+                              (category) => DropdownMenuItem(
+                                value: category.name,
+                                child: Text(category.name),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: items.isEmpty
+                            ? null
+                            : (value) {
+                                setState(() => _category = value);
+                              },
+                      );
                     },
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _priceController,
-                    decoration:
-                        const InputDecoration(labelText: 'Original price'),
+                    decoration: const InputDecoration(
+                      labelText: 'Original price',
+                    ),
                     keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 12),
@@ -316,10 +329,12 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                           final picked = await showDatePicker(
                             context: context,
                             initialDate: _preparedAt,
-                            firstDate:
-                                DateTime.now().subtract(const Duration(days: 7)),
-                            lastDate:
-                                DateTime.now().add(const Duration(days: 30)),
+                            firstDate: DateTime.now().subtract(
+                              const Duration(days: 7),
+                            ),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 30),
+                            ),
                           );
                           if (picked != null) {
                             setState(() => _preparedAt = picked);
@@ -335,8 +350,9 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                             context: context,
                             initialDate: _expirationAt,
                             firstDate: DateTime.now(),
-                            lastDate:
-                                DateTime.now().add(const Duration(days: 30)),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 30),
+                            ),
                           );
                           if (picked != null) {
                             setState(() => _expirationAt = picked);
@@ -367,12 +383,30 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: () async {
-                      await ref.read(sellerRepositoryProvider).createProduct(
+                      final activeCategories = categories.valueOrNull ?? [];
+                      final selectedCategory =
+                          activeCategories.any((item) => item.name == _category)
+                          ? _category
+                          : (activeCategories.isNotEmpty
+                                ? activeCategories.first.name
+                                : null);
+
+                      if (selectedCategory == null) {
+                        context.showSnackBar(
+                          'Add at least one active category in the admin console before creating a product.',
+                          isError: true,
+                        );
+                        return;
+                      }
+
+                      await ref
+                          .read(sellerRepositoryProvider)
+                          .createProduct(
                             ownerId: userId,
                             name: _productNameController.text.trim(),
-                            description:
-                                _productDescriptionController.text.trim(),
-                            category: _category,
+                            description: _productDescriptionController.text
+                                .trim(),
+                            category: selectedCategory,
                             originalPrice:
                                 double.tryParse(_priceController.text) ?? 0,
                             quantity:
@@ -428,10 +462,7 @@ class _SellerDashboardPageState extends ConsumerState<SellerDashboardPage> {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-  });
+  const _SectionCard({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -467,9 +498,9 @@ class _RecommendationTile extends ConsumerWidget {
       subtitle: Text('${item.suggestedDiscountPercent}% suggested discount'),
       trailing: FilledButton.tonal(
         onPressed: () async {
-          await ref.read(sellerRepositoryProvider).acceptRecommendation(
-                recommendationId: item.id,
-              );
+          await ref
+              .read(sellerRepositoryProvider)
+              .acceptRecommendation(recommendationId: item.id);
           ref.invalidate(sellerRecommendationsProvider);
           ref.invalidate(sellerProductsProvider);
         },

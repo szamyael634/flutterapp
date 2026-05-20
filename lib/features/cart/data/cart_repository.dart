@@ -18,7 +18,9 @@ class CartRepository {
         .order('created_at');
 
     return rows
-        .map<CartItem>((row) => CartItem.fromMap(Map<String, dynamic>.from(row)))
+        .map<CartItem>(
+          (row) => CartItem.fromMap(Map<String, dynamic>.from(row)),
+        )
         .toList();
   }
 

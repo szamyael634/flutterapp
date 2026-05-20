@@ -34,7 +34,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       return;
     }
 
-    await ref.read(authControllerProvider.notifier).signUp(
+    await ref
+        .read(authControllerProvider.notifier)
+        .signUp(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
           fullName: _nameController.text.trim(),
@@ -81,11 +83,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     children: [
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Full name'),
+                        decoration: const InputDecoration(
+                          labelText: 'Full name',
+                        ),
                         validator: (value) =>
                             value != null && value.trim().isNotEmpty
-                                ? null
-                                : 'Enter your name',
+                            ? null
+                            : 'Enter your name',
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<AppRole>(
@@ -112,8 +116,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         decoration: const InputDecoration(labelText: 'Email'),
                         validator: (value) =>
                             value != null && value.contains('@')
-                                ? null
-                                : 'Enter a valid email',
+                            ? null
+                            : 'Enter a valid email',
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -124,7 +128,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       TextFormField(
                         controller: _passwordController,
                         obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Password'),
+                        decoration: const InputDecoration(
+                          labelText: 'Password',
+                        ),
                         validator: (value) => value != null && value.length >= 6
                             ? null
                             : 'Password must be at least 6 characters',
@@ -135,7 +141,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         child: authState.isLoading
                             ? const SizedBox.square(
                                 dimension: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text('Create account'),
                       ),

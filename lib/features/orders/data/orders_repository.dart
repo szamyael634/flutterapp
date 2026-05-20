@@ -54,8 +54,9 @@ class OrdersRepository {
             .from('deliveries')
             .select('order_id')
             .eq('rider_id', user.id);
-        final orderIds =
-            deliveryRows.map((row) => row['order_id'] as String).toList();
+        final orderIds = deliveryRows
+            .map((row) => row['order_id'] as String)
+            .toList();
         if (orderIds.isEmpty) {
           return [];
         }

@@ -44,7 +44,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(user.fullName, style: Theme.of(context).textTheme.headlineSmall),
+                      Text(
+                        user.fullName,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
                       const SizedBox(height: 8),
                       Text(user.email),
                       Text('Role: ${user.role.name}'),

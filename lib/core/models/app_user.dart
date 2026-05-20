@@ -19,7 +19,8 @@ class AppUser {
   final ApprovalStatus approvalStatus;
   final String? phone;
 
-  bool get canSell => role == AppRole.seller && approvalStatus == ApprovalStatus.approved;
+  bool get canSell =>
+      role == AppRole.seller && approvalStatus == ApprovalStatus.approved;
 
   bool get canDeliver =>
       role == AppRole.rider && approvalStatus == ApprovalStatus.approved;

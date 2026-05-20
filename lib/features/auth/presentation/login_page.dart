@@ -29,7 +29,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       return;
     }
 
-    await ref.read(authControllerProvider.notifier).signIn(
+    await ref
+        .read(authControllerProvider.notifier)
+        .signIn(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
@@ -73,14 +75,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         decoration: const InputDecoration(labelText: 'Email'),
                         validator: (value) =>
                             value != null && value.contains('@')
-                                ? null
-                                : 'Enter a valid email',
+                            ? null
+                            : 'Enter a valid email',
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Password'),
+                        decoration: const InputDecoration(
+                          labelText: 'Password',
+                        ),
                         validator: (value) => value != null && value.length >= 6
                             ? null
                             : 'Password must be at least 6 characters',
@@ -91,7 +95,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         child: authState.isLoading
                             ? const SizedBox.square(
                                 dimension: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text('Log in'),
                       ),

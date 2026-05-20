@@ -43,7 +43,11 @@ class ProductDetailPage extends ConsumerWidget {
               Chip(label: Text(AppFormatters.currency(product.currentPrice))),
               Chip(label: Text('Stock ${product.quantity}')),
               Chip(label: Text('Discount ${product.discountPercent}%')),
-              Chip(label: Text('Expires ${AppFormatters.shortDate(product.expirationAt)}')),
+              Chip(
+                label: Text(
+                  'Expires ${AppFormatters.shortDate(product.expirationAt)}',
+                ),
+              ),
             ],
           ),
           if (product.allergens.isNotEmpty) ...[
@@ -60,10 +64,9 @@ class ProductDetailPage extends ConsumerWidget {
                 context.showSnackBar('Please log in first.', isError: true);
                 return;
               }
-              await ref.read(cartRepositoryProvider).addToCart(
-                    buyerId: userId,
-                    product: product,
-                  );
+              await ref
+                  .read(cartRepositoryProvider)
+                  .addToCart(buyerId: userId, product: product);
               ref.invalidate(cartProvider);
               if (context.mounted) {
                 context.showSnackBar('${product.name} added to cart');

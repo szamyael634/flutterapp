@@ -22,8 +22,7 @@ class ProductRecommendation {
       status: map['status'] as String? ?? 'none',
       suggestedDiscountPercent: map['suggested_discount_percent'] as int? ?? 0,
       message: map['message'] as String? ?? '',
-      applyReducedCommission:
-          map['apply_reduced_commission'] as bool? ?? false,
+      applyReducedCommission: map['apply_reduced_commission'] as bool? ?? false,
     );
   }
 }

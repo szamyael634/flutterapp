@@ -9,10 +9,7 @@ import '../data/delivery_repository.dart';
 enum DeliveryMode { available, assigned }
 
 class DeliveryPage extends ConsumerWidget {
-  const DeliveryPage({
-    super.key,
-    required this.mode,
-  });
+  const DeliveryPage({super.key, required this.mode});
 
   final DeliveryMode mode;
 
@@ -20,16 +17,18 @@ class DeliveryPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final riderId = ref.watch(currentUserIdProvider);
     final future = switch (mode) {
-      DeliveryMode.available =>
-        ref.watch(_availableDeliveriesProvider),
-      DeliveryMode.assigned =>
-        ref.watch(_assignedDeliveriesProvider(riderId ?? '')),
+      DeliveryMode.available => ref.watch(_availableDeliveriesProvider),
+      DeliveryMode.assigned => ref.watch(
+        _assignedDeliveriesProvider(riderId ?? ''),
+      ),
     };
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          mode == DeliveryMode.available ? 'Delivery requests' : 'Assigned deliveries',
+          mode == DeliveryMode.available
+              ? 'Delivery requests'
+              : 'Assigned deliveries',
         ),
       ),
       body: AsyncValueView(
@@ -59,7 +58,9 @@ class DeliveryPage extends ConsumerWidget {
                                         riderId: riderId,
                                       );
                                   ref.invalidate(_availableDeliveriesProvider);
-                                  ref.invalidate(_assignedDeliveriesProvider(riderId));
+                                  ref.invalidate(
+                                    _assignedDeliveriesProvider(riderId),
+                                  );
                                 },
                           child: const Text('Claim'),
                         )
@@ -71,7 +72,9 @@ class DeliveryPage extends ConsumerWidget {
                                   deliveryId: delivery.id,
                                   status: value,
                                 );
-                            ref.invalidate(_assignedDeliveriesProvider(riderId ?? ''));
+                            ref.invalidate(
+                              _assignedDeliveriesProvider(riderId ?? ''),
+                            );
                           },
                           itemBuilder: (_) => const [
                             PopupMenuItem(
@@ -98,14 +101,18 @@ class DeliveryPage extends ConsumerWidget {
   }
 }
 
-final _availableDeliveriesProvider = FutureProvider<List<DeliveryRecord>>((ref) {
+final _availableDeliveriesProvider = FutureProvider<List<DeliveryRecord>>((
+  ref,
+) {
   return ref.watch(deliveryRepositoryProvider).fetchAvailableDeliveries();
 });
 
 final _assignedDeliveriesProvider =
     FutureProvider.family<List<DeliveryRecord>, String>((ref, riderId) {
-  if (riderId.isEmpty) {
-    return Future.value([]);
-  }
-  return ref.watch(deliveryRepositoryProvider).fetchAssignedDeliveries(riderId);
-});
+      if (riderId.isEmpty) {
+        return Future.value([]);
+      }
+      return ref
+          .watch(deliveryRepositoryProvider)
+          .fetchAssignedDeliveries(riderId);
+    });

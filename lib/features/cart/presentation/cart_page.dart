@@ -49,7 +49,9 @@ class _CartPageState extends ConsumerState<CartPage> {
                     leading: IconButton(
                       icon: const Icon(Icons.remove_circle_outline),
                       onPressed: () async {
-                        await ref.read(cartRepositoryProvider).updateQuantity(
+                        await ref
+                            .read(cartRepositoryProvider)
+                            .updateQuantity(
                               cartItemId: item.id,
                               quantity: item.quantity - 1,
                             );
@@ -59,7 +61,9 @@ class _CartPageState extends ConsumerState<CartPage> {
                     trailing: IconButton(
                       icon: const Icon(Icons.add_circle_outline),
                       onPressed: () async {
-                        await ref.read(cartRepositoryProvider).updateQuantity(
+                        await ref
+                            .read(cartRepositoryProvider)
+                            .updateQuantity(
                               cartItemId: item.id,
                               quantity: item.quantity + 1,
                             );
@@ -81,7 +85,10 @@ class _CartPageState extends ConsumerState<CartPage> {
                 initialValue: _paymentMethod,
                 decoration: const InputDecoration(labelText: 'Payment method'),
                 items: const [
-                  DropdownMenuItem(value: 'cod', child: Text('Cash on Delivery')),
+                  DropdownMenuItem(
+                    value: 'cod',
+                    child: Text('Cash on Delivery'),
+                  ),
                   DropdownMenuItem(value: 'paymongo', child: Text('PayMongo')),
                 ],
                 onChanged: (value) {
@@ -125,9 +132,9 @@ class _CartPageState extends ConsumerState<CartPage> {
                             ..showSnackBar(
                               SnackBar(
                                 content: Text(
-                            result.checkoutUrl == null
-                                ? 'Order ${result.orderId} created'
-                                : 'Order ${result.orderId} created. Continue payment in your browser.',
+                                  result.checkoutUrl == null
+                                      ? 'Order ${result.orderId} created'
+                                      : 'Order ${result.orderId} created. Continue payment in your browser.',
                                 ),
                               ),
                             );
