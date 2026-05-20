@@ -12,6 +12,9 @@ echo "Extracting Flutter SDK..."
 tar -xf flutter.tar.xz
 export PATH="$PWD/flutter/bin:$PATH"
 
+echo "Configuring Git safe directory for Flutter SDK..."
+git config --global --add safe.directory "$PWD/flutter"
+
 echo "Flutter version..."
 flutter --version
 
